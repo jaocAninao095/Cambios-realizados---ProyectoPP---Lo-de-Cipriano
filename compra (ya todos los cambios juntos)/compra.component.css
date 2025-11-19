@@ -1,0 +1,101 @@
+
+
+/* ACA HAY CAMBIOS QUE LE DAN EL ESTILO AL FORMULARIO */
+
+
+.login-container {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ min-height: 100vh;
+ background-color: #fdfaf0; 
+}
+
+.library-form {
+ width: 600px;
+ margin: 40px auto;
+ padding: 30px;
+ background-color: #fffef5; 
+ border: 1px solid #d5c6a3;
+ border-radius: 12px;
+ box-shadow: 0 6px 12px rgba(60, 60, 60, 0.15);
+ font-family: 'Georgia', serif;
+}
+
+/* Título */
+.form-title {
+ text-align: start;
+ font-family: 'Georgia', serif;
+ color: #5e4c3a; 
+ margin-bottom: 20px;
+}
+
+/* Etiquetas */
+.library-form label {
+ display: block;
+ margin-bottom: 6px;
+ color: #5e4c3a; 
+ font-weight: bold;
+}
+
+/* Inputs y Select  */
+.custom-input,
+.custom-textarea {
+ width: 100%;
+ padding: 10px 14px;
+ border: 1px solid #c3b287;
+ border-radius: 8px;
+ background-color: #fdfaf0;
+ color: #2c3e50;
+ font-size: 1rem;
+ margin-bottom: 20px;
+ font-family: 'Georgia', serif;
+ transition: border 0.3s ease-in-out;
+}
+
+.custom-input:focus,
+.custom-textarea:focus {
+ border-color: #a38c4a;
+ outline: none;
+}
+
+
+.form-group {
+    margin-bottom: 20px; 
+}
+
+/* Botón de envío (Finalizar Compra) */
+.submit-btn {
+ width: 180px; 
+ height: 45px;
+ background: linear-gradient(to top, #a38c4a, #cfc278, #f4e68d); 
+ color: #2c2c2c;
+ border-radius: 50px;
+ border: none;
+ outline: none;
+ cursor: pointer;
+ font-size: 0.9rem;
+ text-transform: uppercase;
+ letter-spacing: 1px;
+ box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+ transition: background 0.3s ease-in-out;
+}
+
+.submit-btn:disabled {
+ background: #ddd;
+ cursor: not-allowed;
+ color: #777;
+}
+
+.submit-btn:hover:enabled {
+ background: linear-gradient(to top, #bfa64b, #e6db84, #fff5b0);
+}
+
+
+.form-text.text-danger, .form-text.text.danger {
+    color: #dc3545 ; 
+    font-size: 0.85rem;
+    margin-top: -15px; 
+    margin-bottom: 20px;
+    display: block;
+}
