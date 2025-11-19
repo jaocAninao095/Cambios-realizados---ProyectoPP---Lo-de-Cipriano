@@ -5,223 +5,237 @@ import { CommonModule } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import jsPDF from 'jspdf';
 import { CarritoService } from '../../servicios/carrito.service';
-import { Router, RouterLink } from '@angular/router'; //=====NECESARIO PARA RESOLVER F5======
 
 @Component({
   selector: 'app-compra',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './compra.component.html',
   styleUrls: ['./compra.component.css']
 })
 export class CompraComponent implements OnInit {
- // Declaración del formulario reactivo para la compra
-formularioCompra!: FormGroup;
 
-// Variable para almacenar el total de la compra (subtotal + envío)
-total!: number;
+  formularioCompra!: FormGroup;
 
-// Costo fijo de envío
-envio = 1500;
+  total!: number;
 
-// indicador para saber si la factura ya fue generada
-facturaGenerada = false;
+  envio = 1500;
 
-// Objeto que contiene la información de la factura generada
-factura: any;
+  facturaGenerada = false;
 
-// Controla la visibilidad del modal que muestra el PDF
-mostrarModal = false;
+  factura: any;
 
-// Fuente segura para mostrar el PDF generado en el iframe (URL sanitizada)
-pdfSrc: SafeResourceUrl | undefined;
+  mostrarModal = false;
 
-constructor(
-  private fb: FormBuilder,            // FormBuilder para crear el formulario reactivo
-  private carritoService: CarritoService,  // Servicio para manejar el carrito y obtener productos y total
-  private sanitizer: DomSanitizer,    // Para sanitizar la URL del PDF y que Angular lo permita mostrar
-  private router: Router               // Para redirijir al usuario al inicio tras la compra !=====NECESARIO PARA RESOLVER F5======!
-) {}
 
-// Método que se ejecuta al inicializar el componente
-ngOnInit(): void {
-  //formulario con los campos requeridos y validadores
-  this.formularioCompra = this.fb.group({
-    nombre: ['', Validators.required],
-    direccion: ['', Validators.required],
-    correo: ['', [Validators.required, Validators.email]],
-    telefono: ['', Validators.required],
-    codigoPostal: ['', Validators.required],
-    ciudad: ['', Validators.required],
-    provincia: ['', Validators.required],
-    metodoPago: ['', Validators.required]
-  });
-}
+  pdfSrc: SafeResourceUrl | undefined;
 
-// Calcula el total de la compra sumando el subtotal y el costo de envío
-calcularTotal(): number {
-  const subtotal = this.carritoService.obtenerTotal();  // Obtiene subtotal del carrito
-  this.total = subtotal + this.envio;                    // Suma envío al subtotal
-  return this.total;
-}
+  constructor(
+    private fb: FormBuilder,
+    private carritoService: CarritoService,
+    private sanitizer: DomSanitizer
+  ) { }
 
-// Prepara los datos para la factura con cliente, productos, totales y fecha
-emitirFactura(): void {
-  const datosCliente = this.formularioCompra.value;          // Datos ingresados en el formulario
-  const productos = this.carritoService.obtenerProductos();  // Productos del carrito
-  const totalFinal = this.calcularTotal();                   // Total calculado con envío
 
-  // Construye el objeto factura con toda la info necesaria
-  this.factura = {
-    cliente: datosCliente,
-    productos: productos,
-    envio: this.envio,
-    total: totalFinal,
-    fecha: new Date()
-  };
+  ngOnInit(): void {
 
-  // Marca que la factura fue generada
-  this.facturaGenerada = true;
-}
 
-// Método que se ejecuta al finalizar la compra (clic en botón)
-// Verifica validez del formulario, genera factura y muestra PDF
-finalizarCompra(): void {
-  if (this.formularioCompra.valid) {
-    this.emitirFactura();       // Crea la factura
-    this.generarPDFModal();     // Genera y muestra el PDF en modal
-    
-  } else {
-    this.formularioCompra.markAllAsTouched(); // Marca todos los campos como tocados para mostrar errores
+    this.formularioCompra = this.fb.group({
+      nombre: ['', Validators.required],
+      direccion: ['', Validators.required],
+      correo: ['', [Validators.required, Validators.email]],
+      telefono: ['', Validators.required],
+      codigoPostal: ['', Validators.required],
+      ciudad: ['', Validators.required],
+      provincia: ['', Validators.required],
+      metodoPago: ['', Validators.required]
+    });
   }
-}
-
-// Genera el PDF con jsPDF y crea la URL para mostrar en iframe dentro del modal
-generarPDFModal(): void {  // =========== POSIBLE PDF PARA FACTURA, PERO EL DE JOAQUIN URIBE ESTA MEJOR ===============
-  if (!this.factura) return;
-
-  const doc = new jsPDF();
-
-  // ====== TÍTULO ======
-  doc.setFontSize(20);
-  doc.text('Factura de Compra', 14, 20);
-  doc.setLineWidth(0.5);
-  doc.line(10, 25, 200, 25); // línea decorativa
-
-  // ====== FECHA ======
-  doc.setFontSize(12);
-  doc.text(`Fecha: ${this.factura.fecha.toLocaleString()}`, 14, 35);
-
-  // ====== INFO CLIENTE (dentro de un recuadro) ======
-  doc.setFontSize(14);
-  doc.text('Datos del Cliente', 14, 45);
-  doc.setLineWidth(0.2);
-  doc.rect(10, 48, 190, 58); // recuadro
-
-  const c = this.factura.cliente;
-  let y = 58;
-
-  doc.setFontSize(12);
-  doc.text(`Nombre: ${c.nombre}`, 14, y);
-  y += 8;
-  doc.text(`Dirección: ${c.direccion}`, 14, y);
-  y += 8;
-  doc.text(`Correo: ${c.correo}`, 14, y);
-  y += 8;
-  doc.text(`Teléfono: ${c.telefono}`, 14, y);
-  y += 8;
-  doc.text(`Ciudad: ${c.ciudad}`, 14, y);
-  y += 8;
-  doc.text(`Provincia: ${c.provincia}`, 14, y);
-  y += 8;
-  doc.text(`Código Postal: ${c.codigoPostal}`, 14, y);
-
-  // ====== TABLA DE PRODUCTOS ======
-  y += 20;
-  doc.setFontSize(14);
-  doc.text('Productos', 14, y);
-  doc.line(10, y + 2, 200, y + 2);
-
-  y += 10;
-
-  // Encabezados
-  doc.setFontSize(12);
-  doc.text('Producto', 20, y);
-  doc.text('Cant.', 120, y);
-  doc.text('Precio', 150, y);
-  doc.text('Subtotal', 180, y);
-
-  doc.line(10, y + 2, 200, y + 2);
-
-  // Contenido
-  y += 10;
-
-  this.factura.productos.forEach((item: any) => {
-    doc.text(item.producto.nombre, 20, y);
-    doc.text(String(item.cantidad), 120, y);
-    doc.text(`$${item.producto.precio.toFixed(2)}`, 150, y);
-    doc.text(
-      `$${(item.producto.precio * item.cantidad).toFixed(2)}`,
-      180,
-      y
-    );
-    y += 10;
 
 
-    this.carritoService.vaciarCarrito() // ================== NECESARIO PARA VACIAR CARRITO TRAS LA COMPRA F6==========================
-  });
-
-  // ====== TOTAL ======
-  y += 10;
-  doc.line(10, y, 200, y);
-  y += 10;
-
-  doc.setFontSize(12);
-  doc.text(`Costo de Envío: $${this.factura.envio.toFixed(2)}`, 14, y);
-  y += 10;
-
-  doc.setFontSize(16);
-  doc.text(`Total a Pagar: $${this.factura.total.toFixed(2)}`, 14, y);
-
-  // ====== FINAL ======
-  const pdfBlob = doc.output('blob');
-  this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(
-    URL.createObjectURL(pdfBlob)
-  );
-  this.mostrarModal = true;
-}
-
-
-// Método para cerrar el modal y liberar la URL del PDF para evitar fugas de memoria
-cerrarModal(): void {
-  this.mostrarModal = false;
-  if (this.pdfSrc) {
-    // Se revoca la URL para liberar recursos
-    URL.revokeObjectURL((this.pdfSrc as any).changingThisBreaksApplicationSecurity);
-    this.pdfSrc = undefined;
+  calcularTotal(): number {
+    const subtotal = this.carritoService.obtenerTotal();
+    this.total = subtotal + this.envio;
+    return this.total;
   }
-}
 
-// Método para imprimir el PDF que está cargado dentro del iframe en la vista
-imprimirPDF(): void {
-  // Obtiene la referencia al elemento iframe del DOM mediante su ID 'pdfFrame'
-  // Puede devolver null si no se encuentra el elemento
-  const iframe: HTMLIFrameElement | null = document.getElementById('pdfFrame') as HTMLIFrameElement;
 
-  // Verifica que el iframe exista y que tenga un objeto contentWindow válido
-  if (iframe && iframe.contentWindow) {
-    // Le da foco al contenido del iframe para asegurarse que la ventana correcta está activa para imprimir
-    iframe.contentWindow.focus();
+  emitirFactura(): void {
+    const datosCliente = this.formularioCompra.value;
+    const productos = this.carritoService.obtenerProductos();
+    const totalFinal = this.calcularTotal();
 
-    // Llama al método print() de la ventana del iframe para abrir la ventana de impresión del navegador
-    iframe.contentWindow.print();
+
+    this.factura = {
+      cliente: datosCliente,
+      productos: productos,
+      envio: this.envio,
+      total: totalFinal,
+      fecha: new Date()
+    };
+
+
+    this.facturaGenerada = true;
   }
-}
-
-volverAlInicio(){    //========================= CAMBIO POR PROBLEMA F5 ============================
-  this.cerrarModal(); 
-  this.router.navigate(["inicio"]);
-}
 
 
+  finalizarCompra(): void {
+    if (this.formularioCompra.valid) {
+      this.emitirFactura();
+      this.generarPDFModal();
+    } else {
+      this.formularioCompra.markAllAsTouched();
+    }
+  }
+
+
+
+  
+
+
+
+
+  //ACA ESTA EL CAMBIO, ES TODO EL METODO ASIQUE COPIALO NOMAS//
+  generarPDFModal(): void {
+    if (!this.factura) return;
+
+    const doc = new jsPDF();
+
+    // --- 1. Encabezado de la Factura ---
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FACTURA DE COMPRA', 105, 20, { align: 'center' }); // Título centrado
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text('No. Factura: #12345678', 180, 26, { align: 'right' });
+    doc.text(`Fecha: ${this.factura.fecha.toLocaleDateString()}`, 180, 32, { align: 'right' });
+    doc.line(10, 36, 200, 36);
+
+
+    // --- 2. Información del Cliente ---
+    let y = 45;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Datos del Cliente', 14, y);
+
+    y += 5;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    const c = this.factura.cliente;
+    doc.text(`Nombre: ${c.nombre}`, 14, y += 6);
+    doc.text(`Correo: ${c.correo}`, 14, y += 6);
+    doc.text(`Teléfono: ${c.telefono}`, 14, y += 6);
+    doc.text(`Dirección: ${c.direccion}, ${c.ciudad}, ${c.provincia} (${c.codigoPostal})`, 14, y += 6);
+
+    y += 8;
+    doc.line(10, y, 200, y);
+
+    // --- 3. Listado de Productos (Usando una estructura de Tabla) ---
+    y += 8;
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalle de Productos', 14, y);
+
+    y += 8;
+
+    // Encabezados de la Tabla
+    const startY = y;
+    doc.setFontSize(10);
+    doc.setFillColor(230, 230, 230);
+    doc.rect(14, startY, 182, 7, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Producto', 16, startY + 5);
+    doc.text('Cant.', 120, startY + 5, { align: 'right' });
+    doc.text('Precio Unitario', 150, startY + 5, { align: 'right' });
+    doc.text('Subtotal', 196, startY + 5, { align: 'right' });
+
+    // Filas de Productos
+    y += 7;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+    let totalItems = 0;
+    this.factura.productos.forEach((item: any) => {
+
+      if (totalItems % 2 !== 0) {
+        doc.setFillColor(245, 245, 245);
+        doc.rect(14, y, 182, 6, 'F');
+      }
+
+      doc.text(item.producto.nombre, 16, y + 4);
+      doc.text(`${item.cantidad}`, 120, y + 4, { align: 'right' });
+      doc.text(`$${item.producto.precio.toFixed(2)}`, 150, y + 4, { align: 'right' });
+      doc.text(`$${(item.producto.precio * item.cantidad).toFixed(2)}`, 196, y + 4, { align: 'right' });
+      y += 6;
+      totalItems++;
+    });
+    doc.line(14, y, 196, y);
+
+
+    y += 5;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+
+    // Costo de Envío
+    doc.text('Costo de Envío:', 160, y, { align: 'right' });
+    doc.text(`$${this.factura.envio.toFixed(2)}`, 196, y, { align: 'right' });
+
+    // Total a Pagar
+    y += 5;
+    doc.line(140, y, 196, y); // Línea de separación antes del total
+    y += 3;
+
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+
+    doc.text('TOTAL A PAGAR:', 160, y + 2, { align: 'right' });
+    doc.text(`$${this.factura.total.toFixed(2)}`, 196, y + 2, { align: 'right' });
+
+
+    doc.setLineWidth(0.5);
+    doc.line(138, y + 4, 196, y + 4);
+    doc.setLineWidth(0.2);
+
+    // --- Finalización ---
+    // Convierte el PDF y genera una URL segura para Angular
+    const pdfBlob = doc.output('blob');
+    this.pdfSrc = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(pdfBlob));
+
+    // Abre el modal que contiene el PDF
+    this.mostrarModal = true;
+  }
+
+
+
+
+
+
+
+
+
+
+
+  cerrarModal(): void {
+    this.mostrarModal = false;
+    if (this.pdfSrc) {
+      URL.revokeObjectURL((this.pdfSrc as any).changingThisBreaksApplicationSecurity);
+      this.pdfSrc = undefined;
+    }
+  }
+
+
+  imprimirPDF(): void {
+
+    const iframe: HTMLIFrameElement | null = document.getElementById('pdfFrame') as HTMLIFrameElement;
+
+
+    if (iframe && iframe.contentWindow) {
+
+      iframe.contentWindow.focus();
+
+      iframe.contentWindow.print();
+    }
+  }
 }
