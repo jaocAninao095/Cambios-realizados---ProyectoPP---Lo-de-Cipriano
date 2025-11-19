@@ -1,0 +1,111 @@
+/*Estiloqweqwe general*/
+body{
+    background-color: rgb(9, 10, 41);
+    color: white;
+  font-family: 'Georgia', serif;}
+
+/*contenedor de las tarjetas*/
+.card-container{
+    display: flex;
+    justify-content: center; /*centrar horizontalmente*/
+    gap: 20px; /*espacio entre tarjetas*/
+    flex-wrap: wrap; /*permite acomodar la pagina dependiendo del tamaño de la pantalla*/
+    padding: 20px;
+
+}
+/*tarjeta estilo*/
+.card{
+    width:  18rem;
+    background-color: black;
+    color: white;
+    border-radius: 10;
+    overflow: hidden;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+    height: 575px;
+}
+/*efecto de la tarjeta*/
+.card:hover{
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(255, 255, 255, 0.2);
+}
+/*imagen dentro de la tarjeta*/
+.card img{
+    width: 100%;
+    height: 425px;
+    object-fit: cover;
+}
+
+/*boton estilo*/
+.card .btn{
+    background-color: rgb(248, 244, 0);
+    color: black;
+    border: none;
+    transition: background 0.3s ease-in-out;
+}
+
+/*al momento de achicar la pantalla se acomodan las columnas*/
+@media(max-width:600px){
+    .card-container{
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+.btn-div{
+    position: absolute;
+    bottom: 0;
+    right: 50;
+    left: 0;
+    align-items: center;
+    justify-content: center;
+    
+}
+
+h1{
+    text-align: center;
+}
+
+/* Botones de compra y fav */ 
+.btn span {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: top 0.5s;
+}
+
+.btn-text-one {
+  position: absolute;
+  width: 100%;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.btn-text-two {
+  position: absolute;
+  width: 100%;
+  top: 150%;
+  left: 0;
+  transform: translateY(-50%);
+}
+
+.btn:hover .btn-text-one {
+  top: -100%;
+}
+
+.btn:hover .btn-text-two {
+  top: 50%;
+}
+
+
+/*Titulo de productos*/
+.tituloprincipal {
+  text-align: start;
+  font-size: 2rem;
+  color: #000000;
+  margin-bottom: 30px;
+  font-family: 'Georgia', serif;
+  text-decoration: underline;
+  padding-top: 30px;
+}
