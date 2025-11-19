@@ -1,0 +1,21 @@
+.container {
+    padding: 30px;
+}
+.section-title {
+  text-align: left;
+  font-size: 2rem;
+  margin: 40px 0 20px 0;
+}
+.info-title {
+  text-align: start;
+  font-size: 2rem;
+  color: #000000;
+  margin-bottom: 30px;
+  font-family: 'Georgia', serif;
+  text-decoration: underline;
+}
+.botontabla {
+    justify-content: center;
+    margin: 5px;
+    padding: 5px;
+}
